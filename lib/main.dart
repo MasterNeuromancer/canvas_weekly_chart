@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'weekly_chart.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -12,7 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Container(),
+      home: WeeklyChart(),
     );
   }
 }
