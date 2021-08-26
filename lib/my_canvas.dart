@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 
 class MyCanvas extends CustomPainter {
   var weekData = [];
-  // MyCanvas();
+  final double minD;
+  final double maxD;
+  final double rangeD;
+
+  MyCanvas(this.weekData, this.minD, this.maxD, this.rangeD);
+
   @override
   void paint(Canvas canvas, Size size) {
     var paint = Paint()..color = Colors.white;
@@ -68,6 +73,7 @@ class MyCanvas extends CustomPainter {
   }
 
   void drawDataPoints(Canvas canvas, Paint dpPaint, Rect rect) {
+    if (!(weekData.length > 0)) return;
     var startX = rect.left;
     var startY = rect.bottom;
     var p = Path();
