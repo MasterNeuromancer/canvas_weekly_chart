@@ -5,8 +5,8 @@ class MyCanvas extends CustomPainter {
   final double minD;
   final double maxD;
   final double rangeD;
-
-  MyCanvas(this.weekData, this.minD, this.maxD, this.rangeD);
+  final double percentage;
+  MyCanvas(this.weekData, this.minD, this.maxD, this.rangeD, this.percentage);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -49,12 +49,26 @@ class MyCanvas extends CustomPainter {
       ..color = Colors.green
       ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
+
+    TextStyle titleStyle = TextStyle(
+        color: Colors.black, fontSize: 40, fontWeight: FontWeight.w900);
+
+    TextStyle labelStyle = TextStyle(
+        color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold);
     // draw chart borders
     drawChartBorder(canvas, chBorder, rect);
     // draw data points
     drawDataPoints(canvas, dpPaint, rect);
     // draw chart guides and labels
     drawChartGuides(canvas, chBorder, rect);
+    // drawText Title
+    drawText(canvas, rect.topLeft + Offset(0, -60), rect.width, titleStyle,
+        'Weekly Chart');
+    drawLabels(
+      canvas,
+      rect,
+      labelStyle,
+    );
   }
 
   void drawChartBorder(Canvas canvas, Paint chBorder, Rect rect) {
@@ -64,25 +78,71 @@ class MyCanvas extends CustomPainter {
   void drawChartGuides(Canvas canvas, Paint chBorder, Rect rect) {
     var x = rect.left;
     var colW = chartW / 6.0;
+    // vertical guidelines
     for (var i = 0; i < 7; i++) {
       var p1 = Offset(x, rect.bottom);
       var p2 = Offset(x, rect.top);
       canvas.drawLine(p1, p2, chBorder);
       x += colW;
     }
+
+    // draw horizontal lines
+    var yD = chartH / 3.0;
+    canvas.drawLine(Offset(rect.left, rect.bottom - yD),
+        Offset(rect.right, rect.bottom - yD), chBorder);
+    canvas.drawLine(Offset(rect.left, rect.bottom - yD * 2),
+        Offset(rect.right, rect.bottom - yD * 2), chBorder);
   }
 
   void drawDataPoints(Canvas canvas, Paint dpPaint, Rect rect) {
     if (!(weekData.length > 0)) return;
     var startX = rect.left;
     var startY = rect.bottom;
+    // number of y pixels
+    var yRatio = chartH / rangeD;
+    var colW = chartW / 6.0;
     var p = Path();
     p.moveTo(startX, startY);
-    weekData.forEach((element) {
+    var x = rect.left;
+    bool first = true;
+    weekData.forEach((d) {
       // add points to the path
+      var y = (d - minD) * yRatio * percentage;
+      if (first) {
+        p.moveTo(x, rect.bottom - y);
+        first = false;
+      } else {
+        p.lineTo(x, rect.bottom - y);
+      }
+      x += colW;
     });
 
     // close the path
     canvas.drawPath(p, dpPaint);
+  }
+
+  drawText(Canvas canvas, Offset position, double width, TextStyle style,
+      String text) {
+    final textSpan = TextSpan(text: text, style: style);
+    final textPainter =
+        TextPainter(text: textSpan, textDirection: TextDirection.ltr);
+    textPainter.layout(minWidth: 0, maxWidth: width);
+    textPainter.paint(canvas, position);
+  }
+
+  void drawLabels(Canvas canvas, Rect rect, TextStyle labelStyle) {
+    final xLabel = ["M", "T", "W", "T", "F", "S", "S"];
+    var colW = chartW / 6.0;
+    // draw x Label
+    var x = rect.left;
+    for (var i = 0; i < 7; i++) {
+      drawText(canvas, Offset(x, rect.bottom + 15), 0, labelStyle, xLabel[i]);
+      x += colW;
+    }
+
+    drawText(canvas, rect.bottomLeft + Offset(-35, -10), 40, labelStyle,
+        minD.toStringAsFixed(1));
+    drawText(canvas, rect.topLeft + Offset(-35, 0), 40, labelStyle,
+        maxD.toStringAsFixed(1));
   }
 }
